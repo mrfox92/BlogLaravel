@@ -18,4 +18,8 @@ class Post extends Model
         return $this->belongsTo('App\Category', 'category_id');
     }
 
+    protected $hidden = [
+        'deleted_at'
+    ];
+
 }

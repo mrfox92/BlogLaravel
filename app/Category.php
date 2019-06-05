@@ -12,4 +12,8 @@ class Category extends Model
     public function posts() {
         return $this->hasMany('App\Post');
     }
+
+    protected $hidden = [
+        'deleted_at'
+    ];
 }

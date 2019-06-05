@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use App\Http\Requests\UserCreateRequest;
 use App\Helpers\JwtAuth;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Validator;
 use App\User;
 class UserController extends Controller
@@ -178,12 +181,68 @@ class UserController extends Controller
     }
 
     public function upload(Request $request ) {
-        $res = array(
-            'status'    =>  'error',
-            'code'      =>  400,
-            'message'   =>  'Error al subir imagen'
-        );
+        //  Recoger datos de la peticion
+        $image = $request->file('file0');
+        //  Validar archivos subidos
+        $validate = Validator::make($request->all(),[
+            'file0' =>  'required|image|mimes:jpg,jpeg,png,gif'
+        ]);
+        //  Comprobamos si tenemos errores en nuestra validacion o si image viene vacia
+        if (!$image || $validate->fails()) {
+            $res = array(
+                'status'    =>  'error',
+                'code'      =>  400,
+                'message'   =>  'Error al subir imagen',
+                'erros'     =>  $validate->errors()
+            );
+            
+        } else {
+            $image_name = time().$image->getClientOriginalName();
+            //  Utilizamos storage y el disco en donde guardaremos la imagen
+            Storage::disk('users')->put($image_name, File::get($image));
+            //  si todo va bien mostramos la respuesta
+            $res = array(
+                'status'    =>  'success',
+                'code'      =>  201,
+                'imagen'    =>  $image_name
+            );
+        }
 
         return response()->json( $res, $res['code'] );
+    }
+
+    public function getImage($filename) {
+        //  Obtener la imagen desde el disco
+        $fileExist = Storage::disk('users')->exists($filename);
+        if ($fileExist) {
+            $file = Storage::disk('users')->get($filename);
+            return new Response($file, 200);
+        } else {
+            $res = array(
+                'status'    =>  'error',
+                'code'      =>  404,
+                'message'   =>  'La imagen buscada no existe'
+            );
+            return response()->json( $res, $res['code'] );
+        }
+    }
+
+    public function profile($id) {
+        $user = User::find($id);
+        if (is_object($user)) {
+            $res = array(
+                'status'    =>  'success',
+                'code'      =>  200,
+                'usuario'   =>  $user
+            );
+        } else {
+            $res = array(
+                'status'    =>  'error',
+                'code'      =>  404,
+                'message'   =>  'Usuario no existe'
+            );
+        }
+
+        return response()->json($res, $res['code']);
     }
 }

@@ -1,4 +1,17 @@
 <?php
+//  Permitimos el acceso a cualquier origen
+header('Access-Control-Allow-Origin: *');
+//  Permitimos el acceso de diferentes cabeceras http, 
+//  añadimos a la cabecera Authorization
+header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method, Authorization");
+//  Permitimos las peticiones http: GET, POST, OPTIONS, PUT y DELETE
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
+//  Permitimos las peticiones http: GET, POST, OPTIONS, PUT y DELETE
+header("Allow: GET, POST, OPTIONS, PUT, DELETE");
+$method = $_SERVER['REQUEST_METHOD'];
+if($method == "OPTIONS") {
+    die();
+}
 
 /**
  * Laravel - A PHP Framework For Web Artisans
